@@ -1,0 +1,166 @@
+%\VignetteIndexEntry{Using the gPCA package} 
+%\VignetteKeyword{batch effects}
+
+\documentclass[12pt]{article}
+\usepackage[top=1in,bottom=1in,left=1in,right=1in,ignoreheadfoot=TRUE]{geometry}
+
+\usepackage{amsmath} % allows complicated math
+\usepackage{amsfonts} % provides additional math symbols
+\usepackage{color} % allows color text
+\usepackage{paralist} % allows list environments within paragraphs
+\usepackage{bm} % allows for bold math symbols
+\usepackage{setspace} %allows easy double spacing.
+
+\usepackage{color}
+\usepackage[square,numbers,sort]{natbib} % loads natbib package and options
+\usepackage{Sweave}
+\graphicspath{
+{/Users/reesese/Documents/School/Dissertation/Paper/}
+}
+
+\begin{document}
+
+\title{The gPCA Package for Identifying Batch Effects in High-Throughput Genomic Data}
+\author{Sarah Reese$\footnote{\texttt{reesese@vcu.edu}}$}
+%\date{}
+\maketitle
+
+
+
+%\section{Introduction}
+Batch effects are commonly observed systematic non-biological variation between groups of samples due to experimental artifacts, such as processing date, lab, or technician. Combining samples from multiple batches can cause the true biological variation in a high-throughput experiment to be obscured by variation due to batch. 
+
+\section{Guided Principal Components Analysis}
+Guided principal components analysis (gPCA) is an extension of principal components analysis (PCA) that replaces the data $\mathbf{X}$ matrix in the singular value decomposition (SVD) of PCA with $\mathbf{Y'X}$ such that \[ \mathbf{Y}'\mathbf{X}=\mathbf{UDV}' \] where $\mathbf{Y}$ is an $n \times b$ indicator matrix where $n$ denotes sample and $b$ denotes batch.  For $k=1,\dots,b$ batches, each is comprised of $n_k$ observations such that $\sum_{k=1}^b n_k=n$.  The indicator matrix consists of $b$ blocks with $n_k$ rows for $k=1,\dots,b$, and $k$ columns where, for each block,
+\[
+\mathbf{Y}_k= \left\{ \begin{array}{l l}
+\mathbf{1} \quad \mbox{if} \; k=b \\
+\mathbf{0} \quad \mbox{otherwise} \; \mbox{.}
+\end{array}
+\right.
+\]
+Performing SVD on $\mathbf{Y}'\mathbf{X}$ results in a $b \times b$ batch loadings matrix $\mathbf{U}$ and a $p \times p$ probe loadings matrix $\mathbf{V}$.  Large singular values (the diagonal elements of the $q \times q$ matrix $\mathbf{D}$ where $q=\min(n,p)$) imply that the batch is important for the corresponding principal component. gPCA guides the SVD to look for batch effects in the data based on the batch indicator matrix $\mathbf{Y}$, which can be defined to indicate any type of potential batch effect, such as time of hybridization, plate, or other experimental artifact.
+
+In \citet{reese}, we proposed a test statistic $\delta$ that quantifies the proportion of variance due to batch effects in experimental genomic data. The proportion of total variance due to batch is taken to be the ratio of the variance of the first principal component from gPCA to the variance of the first principal component from unguided PCA
+\[
+\delta = \frac{\mbox{var}(\mathbf{XV}_{g_1})}{\mbox{var}(\mathbf{XV}_{u_1})}
+\]
+where $g$ indicates gPCA and $u$ indicates unguided PCA. $\mathbf{V}$ is the matrix of probe loadings resulting from gPCA or PCA, respectively. Large values of $\delta$ (values near 1) imply that the batch effect is large.
+
+To determine whether $\delta$ is significantly larger than would be expected by chance, a $p$-value is estimated using a permutation distribution created by permuting the batch vector $M=1000$ times so that $\delta_{p_m}$ is computed for $m=1,\dots,M$ where $p$ indicates the permutation.  Here $\delta_{p_m}$ is the proportion of the total variance due to the first principal component from the $m^{th}$ permutation from gPCA to the total variance due to the first principal component from the $m^{th}$ permutation from unguided PCA. A one-sided $p$-value (testing $H_0:\delta_{p_m}=\delta$ versus $H_1:\delta_{p_m}>\delta$) is estimated as the proportion of times the observed $\delta$ was in the extreme tail of the permutation distribution
+\[
+p\text{-value} = \frac{\sum_{m=1}^M \left( \delta_{p_m}>\delta \right)}{M} \mbox{.}
+\]
+For more details on gPCA see \citet{reese}.
+
+\section{R Package}
+The \texttt{gPCA} package includes four example data sets, the \texttt{gPCA.batchdetect()} function that produces the $\delta$ statistic and corresponding $p$-value, and additional visualization functions.
+
+\subsection{Data}
+Four data sets are included in the \texttt{gPCA} package, three simulated data sets and one case study data set.  The case study data (\texttt{data(caseDat)}) contains copy number variation data with $n=500$ observations and $p=1000$ features that were retained after a variance filter was applied. 
+
+The simulated data represents copy number data under three scenarios: \begin{inparaenum}[(1\upshape)]
+\item feature data (here, feature denotes probe) with no phenotypic variable (\texttt{data(nopheDat)}); 
+\item feature data with a high variance phenotypic variable (\texttt{data(highpheDat)}); and 
+\item feature data with a low variance phenotypic variable (\texttt{data(lowpheDat)}).  
+\end{inparaenum}
+The feature data were generated independently from a multivariate normal distribution with 1000 features and 90 observations. Data with two batches and two phenotypes were simulated. Batch mean vectors $\bm{\mu}_{b_1}=\mathbf{0}$ and $\bm{\mu}_{b_2}=\mathbf{1}$ and batch variance $\sigma^2_b\mathbf{I}$ where $\sigma^2_b=0.5$ were used to simulate the data. The proportion of features affected by batch was $\texttt{bprop}=0.01$ for the no phenotype scenario and $\texttt{bprop}=0.05$ for the high and low variance phenotype scenarios. 
+
+For the scenarios with phenotypic effects, the proportion of features affected by phenotype was $\texttt{pprop}=0.1$. The phenotypic mean vectors were $\bm{\mu}_{p_1}=\mathbf{0}$ and $\bm{\mu}_{p_2}=\mathbf{1}$ and the phenotypic variance was $\sigma^2_p\mathbf{I}$ where $\sigma^2_p=2$ for the high variance phenotype scenario and $\sigma^2_p=0.2$ for the low variance phenotype scenario.  \citet{reese} provides an in depth description of the data simulations.
+
+For all four data sets, the first column of the data frame containing the data contains the \texttt{batch} vector which indicates batch for the $n$ observations.  The rest of the data frame contains the uncentered feature data.
+
+\subsection{Application}
+The $\delta$ statistic, corresponding $p$-value from the permutation test, and various other measures are output by the \texttt{gPCA.batchdetect()} function.  The syntax for this function is
+
+{\singlespacing
+<<echo=TRUE,eval=FALSE>>=
+out<-gPCA.batchdetect(x=data,batch=batch,center=FALSE,
+	scaleY=FALSE,filt=NULL,nperm=1000,seed=NULL)
+@
+}
+
+\noindent where \texttt{x} is the $n \times p$ matrix of feature data $\mathbf{X}$, \texttt{batch} is a length $n$ vector indicating batch which is used to calculate the $\mathbf{Y}$ matrix for gPCA.  The option \texttt{center} is a logical indicating whether or not \texttt{data} is centered where \texttt{center=TRUE} if the data \texttt{x} is already centered. \texttt{scaleY} is a logical indicating whether the batch indicator matrix \texttt{Y} is to be scaled by the batch sample size $n_k$. \texttt{nperm} indicates how many permutations will be used for calculating the permutation test statistic (defaults to 1000), \texttt{filt} gives the number of features to retain when applying a variance-based filter to the data (defaults to \texttt{NULL} indicating no filter applied), and \texttt{seed} sets \texttt{set.seed(seed)}.  Note that \texttt{x} must be complete data (i.e. contain no missing values) and the class of \texttt{x} must be \texttt{"matrix"}.  The function, when run actively, will ask if mean-value imputation should be performed for any missing values, but when run passively will cause an error.
+
+The \texttt{gPCA.batchdetect()} function outputs the value of the statistic $\delta$, the associated $p$-value, the batch vector \texttt{batch}, the $M$ values of $\delta_p$ resulting from the permutation test, the proportion of variance associated with the first principal component from unguided (\texttt{PCu}) and guided (\texttt{PCg}) PCA, as well as the cumulative variance associated with all $n$ principal components resulting from unguided PCA (\texttt{cumulative.var.x}) and the cumulative variance associated with all $b$ principal components resulting from gPCA (\texttt{cumulative.var.g}).
+
+The \texttt{gPCA} package also has three functions to visualize the data. The function \texttt{gDist} produces a density plot of the $\delta_p$ values output by the \texttt{gPCA.batchdetect} function. The function \texttt{PCplot} produces principal component plots of either the unguided or guided principal components and allows for either directly comparing the first two principal components, or comparing the first \texttt{npcs} principal components. Finally, the function \texttt{CumulativeVarPlot} produces a plot of the cumulative variance from guided or unguided PCA.
+
+{\singlespacing
+<<echo=TRUE,eval=FALSE>>=
+gDist(out)
+PCplot(out,ug="guided",type="1v2")
+PCplot(out,ug="guided",type="comp",npcs=3)
+CumulativeVarPlot(out,ug="unguided",col="blue")
+@
+}
+
+\section{Example}
+We will discuss a brief example using \texttt{caseDat} data from the \texttt{gPCA} package.  We first load the data \texttt{caseDat} and assign the first column to \texttt{batch}.  The rest of the data frame is the feature data, so we assign that to \texttt{dat} and re-classify it as a matrix.  Since the \texttt{caseDat} feature data is already centered, we set \texttt{center=TRUE}.  The value of the test statistic $\delta$ and the corresponding $p$-value are easily printed and the percent of total variation that is explained by batch is calculated.
+
+{\singlespacing
+<<echo=FALSE,eval=TRUE>>=
+library(gPCA)
+@
+<<echo=TRUE,eval=TRUE>>=
+data(caseDat)
+batch<-caseDat$batch
+data<-caseDat$data
+
+out<-gPCA.batchdetect(x=data,batch=batch,center=TRUE)
+out$delta ; out$p.val
+((out$varPCg1-out$varPCu1)/out$varPCg1)*100
+@
+}
+
+\noindent We can also plot the distribution of the $\delta_p$ values from the permutation test and see where our test statistic $\delta$ (represented by the red dashed line) falls in comparison (Figure \ref{fig:gDist}).
+
+\begin{figure}[!htp]
+\begin{center}
+<<echo=TRUE,eval=TRUE,fig=TRUE>>=
+gDist(out)
+@
+\end{center}
+\caption{Distribution plot of $\delta_p$ values}
+\label{fig:gDist}
+\end{figure}
+
+\noindent Plots of the first versus the second principal components from gPCA can be plotted (Figure \ref{fig:PCplotfunc1v2}) as well as a sample of the first few principal comparisons (Figure \ref{fig:PCplotfunccomp}).
+
+\begin{figure}[!htp]
+\begin{center}
+<<echo=TRUE,eval=TRUE,fig=TRUE>>=
+par(mai=c(0.8,0.8,0.1,0.1),cex=0.8)
+PCplot(out,ug="guided",type="1v2")
+@
+\end{center}
+\caption{Principal components plot of first two principal components from gPCA}
+\label{fig:PCplotfunc1v2}
+\end{figure}
+
+\begin{figure}[!htp]
+\begin{center}
+<<echo=TRUE,eval=TRUE,fig=TRUE>>=
+par(mai=c(0.65,0.65,0.1,0.1),cex=0.8)
+PCplot(out,ug="guided",type="comp",npcs=3)
+@
+\end{center}
+\caption{Principal components plots of the first three principal components with density plots of the principal components on the diagonal.}
+\label{fig:PCplotfunccomp}
+\end{figure}
+
+\section{Conclusion}
+The \texttt{gPCA} package provides functionality to test for batch effects in high-throughput genomic data using the function \texttt{gPCA.batchdetect()}.  The ability to detect batch effects in genomic data allows further batch correction procedures such as batch mean-centering \citep{sims}, distance weighted discrimination (DWD) \citep{marron,benito,huang,huangmulticlass}, or empirical Bayes \citep{li}, to be employed to attempt to remove the unwanted variation due to batch effects.  However, correcting for batch when there is no significant batch effect may result in removing biological variation instead of the systematic non-biological variation due to batch. This package provides the ability to perform a test to detect batch effects.
+
+\section{Session Info}
+{\singlespacing
+<<echo=TRUE,eval=TRUE>>=
+sessionInfo()
+@
+}
+
+{\small
+\bibliographystyle{my-plainnat}
+\bibliography{gPCArefs}
+}
+\end{document}

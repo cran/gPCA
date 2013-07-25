@@ -1,0 +1,129 @@
+%% This BibTeX bibliography file was created using BibDesk.
+%% http://bibdesk.sourceforge.net/
+
+
+%% Created for Sarah E. Reese at 2013-07-25 15:00:37 -0400 
+
+
+%% Saved with string encoding Unicode (UTF-8) 
+
+
+
+@article{huang,
+	Abstract = {Summary: R/DWD is an extensible package for classification. It is built based on a recently developed powerful classification method called distance weighted discrimination (DWD). DWD is related to, and has been shown to be superior to, the support vector machine in situations that are fundamental to bioinformatics, such as very high dimensional data. DWD has proven to be very useful for several fundamental bioinformatics tasks, including classification, data visualization and removal of biases, such as batch effects. Earlier DWD implementations, however, relied on Matlab, which is not free and requires a license. The major contribution of the R/DWD package is an implementation that is completely in R and thus can be used without any requirements for licensing or software purchase. In addition, R/DWD also provides efficient solvers for second-order-cone-programming and quadratic programming.Availability and implementation: The package is freely available from cran.r-project.org.Contact: hanwen.huang@uth.tmc.edu; Perry_Haaland@bd.comSupplementary information: Supplementary data are available at Bioinformatics online.},
+	Annote = {Huang et al. \cite{huang}  provide a description of their \texttt{R} package \texttt{R/DWD} that implements the classification method distance weighted discrimination (DWD) of Marron et al.\cite{marron} and Benito et al.\cite{benito}.},
+	Author = {Huang, H. and Lu, X. and Liu, Y. and Haaland, P. and Marron, J.S.},
+	Date-Added = {2013-07-25 18:59:41 +0000},
+	Date-Modified = {2013-07-25 18:59:41 +0000},
+	Journal = {Bioinformatics},
+	Number = {8},
+	Pages = {1182-1183},
+	Title = {R/{DWD}: distance-weighted discrimination for classification, visualization and batch adjustment},
+	Volume = {28},
+	Year = {2012},
+	Bdsk-Url-1 = {http://dx.doi.org/10.1093/bioinformatics/bts096}}
+
+@article{huangmulticlass,
+	Author = {Huang, Hanwen and Liu, Yufeng and Du, Ying and Perou, Charles M. and Hayes, D. Neil and Todd, Michael J. and Marron, J. S.},
+	Date-Added = {2013-07-25 18:59:41 +0000},
+	Date-Modified = {2013-07-25 18:59:41 +0000},
+	Journal = {Journal of Computational and Graphical Statistics},
+	Title = {Multiclass Distance Weighted Discrimination},
+	Year = {2012},
+	Bdsk-Url-1 = {http://amstat.tandfonline.com/doi/abs/10.1080/10618600.2012.700878},
+	Bdsk-Url-2 = {http://dx.doi.org/10.1080/10618600.2012.700878}}
+
+@article{li,
+	Annote = {Johnson et al. \cite{li} ``propose parametric and non-parametric empirical Bayes framesworks for adjusting data for batch effects that is robust to outliers in small sample sizes and performs comparable to existing methods for large samples.''  The authors apply their method to two microarray data sets.  The main benefit of their method over other methods, such as SVD, DWD, and location and scale (L/S) adjustments, is that it works well on small sample sizes where the other methods they mention require more samples per batch since they are not robust to outliers in small sample sizes.  The authors' method estimates ``the L/S model parameters that represent the batch effects by `pooling information' across genes in each batch to `shrink' the batch effect parameter estimates toward the overall mean of the batch effect estimates (across genes).  These EB estimates are then used to adjust the data for batch effects, providing more robust adjustments fo rhte batch effect on each gene.''  After basic normalization, estimation of expression values, and filtering of genes declared absent in more than 80\% of samples, the EB method was applied. \\
+\\
+The authors assume the model 
+\[
+Y_{ijg}=\alpha_g+X\beta_g+\gamma_{ig}+\delta_{ig}\epsilon_{ijg}
+\]
+for data that contains $m$ batches containing $n_i$ samples within batch $i$ for $i=1,\dots,m$, for gene $g=1,\dots,G$, and the errors $\epsilon \sim N(0,\sigma^2_g)$. \\
+
+\begin{inparaenum}[\itshape 1\upshape)]
+\item \emph{Standardize the data}: The model parameters can differ across genes which will bias the EB estimates.  First standardizing the data gene wise so that genes have similar overall mean and variance will help avoid this bias.  The standardized data, $Z_{ijg}$ are calculated by 
+\[
+Z_{ijg}= \frac{Y_{ijg} - \hat{\alpha}_g - X\hat{\beta}_g } {\hat{\sigma}_g}
+\]
+where $\hat{\alpha}_g$, $\hat{\beta}_g$, and $\hat{\gamma}_{ig}$ are estimated using gene-wise ordinary least squares constraining $\sum_i{n_i \hat{\gamma}_{ig} }=0$ for all genes to ensure identifiability of the parameters.  The variance is then estimated by $\hat{\sigma}^2_g = \frac{1}{N}\sum_{ij}( Y_{ijg} - \hat{\alpha}_g - X\hat{\beta}_g -\hat{\gamma}_{ig} )^2$ where $N$ is the total number of samples. \\
+
+\item \emph{Estimation of the EB batch effect parameter using parametric empirical priors}: Assum $Z_{ijg} \sim N(\gamma_{ig},\delta^2_{ig})$ and the parametric forms of the priors on the batch effects parameters are $\gamma_{ig} \sim N(Y_i,\tau^2_i)$ and $\delta^2_{ig} \sim \text{Inverse Gamma}(\lambda_i,\theta_i)$.  The hyperparameters of the prior distributions ``are estimated empirically from standardized data using the method of moments.''  Note that these priors may change with different data.  Given the above assumptions, the ``EB estimates for batch effect parameters, $\gamma_{ig}$ and $\delta^2_{ig}$, are given (respectively) by the conditional posterior means 
+\[
+\gamma^*_{ig} = \frac{ n_i \bar{\tau}^2_i \hat{\gamma}_{ig} + \delta^{2*}_{ig} \bar{\gamma}_i } { n_i \bar{\tau}^2_i + \delta^{2*}_{ig} }
+\textrm{  and  }
+\delta^{2*}_{ig} = \frac{ \bar{\theta}_i + \frac{1}{2}\sum_j (Z_{ijg} - \gamma^*_{ig})^2 } { \frac{n_j}{2} + \bar{\lambda}_i -1 }
+\] \\
+\item \emph{Adjustment of the data for batch effects}:  Finally, to adjust the data for the batch effects, the adjusted data $\gamma^*_{ijg}$ is calculated
+\[
+\gamma^*_{ijg} = \frac{\hat{\sigma}_g}{\hat{\delta}^*_{ig}} (Z_{ijg} - \hat{\gamma}^*_{ig})+\hat{\alpha}_g + X\hat{\beta}_g
+\]
+\end{inparaenum} 
+The authors show that their method is a very flexible framework for adjusting for additive, multiplicative, and exponential batch effects, and allows for combination of multiple data sets and is robsut to small samples sizes.},
+	Author = {Johnson, W. E. and Li, C. and Rabinovic, A.},
+	Date-Added = {2013-07-25 18:59:41 +0000},
+	Date-Modified = {2013-07-25 18:59:41 +0000},
+	Journal = {Biostatistics},
+	Number = {1},
+	Pages = {118-127},
+	Title = {Adjusting batch effects in microarray expression data using empirical {B}ayes methods},
+	Volume = {8},
+	Year = {2007}}
+
+@article{marron,
+	Annote = {Marron and Todd \cite{marron} present their method Distance Weighted Discrimination (DWD).  DWD addresses the generalizability of Support Vector Machines (SVM) and improves upon SVM in HDLSS settings.  Their new method avoids the problem of ``data piling'' which is inherant in SVM.  DWD computation ``is based on computationally intensive optimization, but while the SVM uses well-known quadratic programming algorithms, the DWD uses recently developed interior-proint methods for so-called Second-Order Cone Programming (SCOP) problems...The improvement available in HDLSS settings from the DWD comes from solving an optimization problem which yields improved data piling properties.''},
+	Author = {Marron, J. S. and Todd, M.},
+	Date-Added = {2013-07-25 18:59:41 +0000},
+	Date-Modified = {2013-07-25 18:59:41 +0000},
+	Month = {Aug.},
+	Title = {Distance Weighted Discrimination},
+	Year = {2002}}
+
+@article{reese,
+	Author = {S. E. Reese AND K. J. Archer AND T. M. Therneau AND E. J. Atkinson AND C. M. Vachon AND M. de Andrade AND JP. A. Kocher AND J. E. Eckel-Passow},
+	Date-Added = {2013-07-25 18:59:41 +0000},
+	Date-Modified = {2013-07-25 18:59:41 +0000},
+	Journal = {Bioinformatics},
+	Title = {A New Statistic for Identifying Batch Effects in High-Throughput Genomic Data that uses Guided Principal Components Analysis},
+	Year = {under review}}
+
+@article{sims,
+	Author = {Andrew H Sims AND Graeme J Smethurst AND Yvonne Hey AND Michal J Okoniewski AND Stuart D Pepper AND Anthony Howell AND Crispin J Miller AND Robert B Clarke},
+	Date-Added = {2013-07-25 18:59:41 +0000},
+	Date-Modified = {2013-07-25 18:59:41 +0000},
+	Journal = {BMC Medical Genomics},
+	Number = {42},
+	Title = {The removal of multiplicative, systematic bias allows integration of breast cancer gene expression datasets -- improving meta-analysis and prediction of prognosis},
+	Volume = {1},
+	Year = {2008}}
+
+@article{benito,
+	Annote = {Benito et al. \cite{benito} present a new method called Distance Weighted Discrimination (DWD) (also Marron and Todd \cite{marron}) for identifying and adjusting for systematic biases that are present in microarray data sets. The authors cite Alter et al. \cite{alter} who used SVD to correct for systematic biases in a data set of yeast cell cycle experiments.  They discuss why the SVD/PCA approach doesn't work: ``seeks only to find `directions of greatest variation'."  The SVD/PCA approach can easily fail when variation due to systematic bias is similar or smaller than variation due to experimental effect.  The goal of their paper was ``to identify effective ways of finding the direction (and magnitude)'' of the simple translation which would be able to remove any population differences when the populations have similar distributions.  \\
+\\
+The authors discuss Fisher Linear Discrimination (FLD) as a better method to remove source effects over SVD, however it has poor performace in high dimension, low sample size (HDLSS) contexts).  Also, they compared their method (DWD) to Support Vector Machines (SVM). They graphically compare FLD, SVM, and DWD using simulated data and ``angle to the optimal direction''.   Benito et al. \cite{benito} use correlation between systematic biases, found using supervised statistical analyses, and non-biological properties, such as location of sample processing or print batch.  The authors tested their method on their previously published breast tumor data sets and evaluated the robustness of DWD.  After performing gene filtering and imputing missing values (see below for details), authors apply DWD (Marron and Todd \cite{marron}, see below for details) to their data, which works better in HDLSS situations.  The authors recommend DWD for systematic artifact adjustment and for other supervised learning tests for microarray data.\\
+\\
+``The main idea of DWD is to improve upon the criterion used for `separation of classes' in the SVM.'' SVM has data piling issues along the margin. SVM is maximizing the minimum distance to the separating plane.  To improve upon this, the authors replace minimum distance with maximizing the sum of the inverse distances.  The details of the batch adjustment using DWD are:
+\begin{inparaenum}[\itshape a\upshape)]
+\item DWD direction vector found;
+\item subpopulations are projected in the DWD direction;
+\item subpopulation projected means are computed; and 
+\item each subpopulation is shifted in the DWD direction by an appropriate amount (found by subtracting the DWD direction vector multiplied by each projected mean for each gene). 
+\end{inparaenum}  
+The authors sucessfully impemented DWD on their previous microarray data set where the expression values were closely correlated to the location source of the samples (Stanford vs. Norway) to adjust for sample source bias.  They also applied their method to a data set from spotted microarrays with print run batch effects.   Benito et al. \cite{benito} use their DWD method to adjust data sets of different types so as to sucessfully combine them.  They confirmed their good results using hierarchical clustering analysis.  The authors cite multiple potential downfalls of DWD: insufficient numbers of samples (works best with 25-30 samples in each group) and loss of meaningful biological information. \\
+\\
+\scriptsize{Performed gene filtering: ``Filtered all genes for a signal intensity of 50 or greater in both the red and green channels and insisted that these signal intesity criteria be present in 70\% or more of the 107 experiments for each gene.  Next, we took the log 2 transformed normalized R/G ratio for each gene on the microarray."\\
+\\
+Imputed Missing values: ``The missing values in the data table were imputed using the KNN-impute feacher contained within the Significance Analysis of Microarrays...This imputed data set was then used for all analyses."\\
+\\
+SVM: see section 2.3 for a brief description of SVM and sources of more information about SVM.
+}},
+	Author = {Benito, M. and Parker, J. and Du, Q. and Wu, J. and Xiang, D. and P., Charles M. and Marron, J. S.},
+	Date-Added = {2013-07-25 18:59:11 +0000},
+	Date-Modified = {2013-07-25 18:59:11 +0000},
+	Journal = {Bioinformatics},
+	Number = {1},
+	Pages = {105-114},
+	Title = {Adjustment of systematic microarray data biases},
+	Volume = {20},
+	Year = {2004}}
